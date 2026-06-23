@@ -102,16 +102,95 @@ import { asyncHandler } from "../utils/asyncHandler";
        
  })
 
- // read blog
+ // getAll posts
+
+ const getAllPosts = asyncHandler(async (req, res) => {
+     
+      // find all posts
+        const posts = await Post.find()
+                                .populate("author", "name")
+                                .sort({createdAt: -1}); // sort in descending
+
+
+      // populate author name
+
+
+      // latest post first
+
+
+      // return them
+      return res 
+            .status(200)
+            .json(new ApiResponse(200, posts, "All posts fetched"));
+
+ })
+
+  // get post by id
+
+  const getPostById = asyncHandler(async (req, res) => {
+        
+         // get id of post
+
+         const {id} = req.params;
+
+
+         // find post
+
+          const post = await Post.findById(id)
+                                  .populate("author", "name email");
+
+         // if not found then throw error
+         if(!post){
+             throw new ApiError(404, "Post not found");
+         }
+
+         // return post
+       return res 
+              .status(200)
+              .json(new ApiResponse(200, post, "post fetched successfully"));
+
+  })
+ 
 
 
 
  // delete blog
 
+ const deletePostById = asyncHandler(async(req, res) => {
+      
+         // find post
+
+         const {id} = req.params; 
+
+         // check if exist
+         const post = await Post.findById(id);
+           
+         if(!post){
+             throw new ApiError(404, "post not found");
+         }
+
+         // check ownership
+          if(post.author.toString() !== req.user._id){
+              throw new ApiError(403, "UnAuthorised Access")
+          }
+
+         //delete post
+
+          await Post.deleteOne();
+
+         // return success
+
+         return res 
+               .status(200)
+               .json(new ApiErrorr(200, {}, "post Deleted SuccessFully"));
+ })
 
 
 
  export {
        createPost,
        updatePost,
+       getAllPosts,
+       getPostById,
+       deletePostById,
  }
